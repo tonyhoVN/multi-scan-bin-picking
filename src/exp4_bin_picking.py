@@ -3,20 +3,21 @@ import rospy
 import cv2 as cv
 import pyrealsense2 as rs
 import open3d as o3d
-import random
-
-from bin_picking.srv import *
-from RegistrationPC import *
-from Robot_Setup import *
-
-# from verify_point.RegistrationPC import combine_matching
-np.set_printoptions(precision=3, suppress=True)
+import os, sys
 
 sys.dont_write_bytecode = True
 dir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(dir))
 path = os.path.abspath(os.path.join(dir,"../result"))
 sys.path.append(path)
+sys.path.append(os.path.abspath(os.path.join(dir,"../")))
+
+from bin_picking.srv import *
+from Robot_Setup import *
+from detect_cnn.detect import *
+
+# from verify_point.RegistrationPC import combine_matching
+np.set_printoptions(precision=3, suppress=True)
 
 ## Load the corner of bin 
 X_CONNER = []
@@ -71,6 +72,8 @@ class Robot_Scan():
         self.color_image = None
         self.depth_image = None 
         self.depth_image_color = None
+        self.bin_image = None
+        self.detect_img = None
 
         # Setup hole filling filter 
         self.hole_filling_filter = rs.hole_filling_filter(0)
@@ -90,10 +93,13 @@ class Robot_Scan():
         while not rospy.is_shutdown() :
             # Record frame
             self.record_frame()
+
+            # Detect object 
+            self.detect_img = detect_result(self.bin_color_image, self.bin_depth_image, model)
             
             # Show images
             cv.namedWindow('Color', cv.WINDOW_AUTOSIZE)
-            cv.imshow('Color', self.color_image)
+            cv.imshow('Color', self.detect_img)
             cv.namedWindow('Depth', cv.WINDOW_AUTOSIZE)
             cv.imshow('Depth', self.depth_image_color)
 
@@ -131,15 +137,17 @@ class Robot_Scan():
         # Record color frame 
         self.color_image = np.asanyarray(self.color_frame.get_data())
         self.color_image = cv.cvtColor(self.color_image, cv.COLOR_RGB2BGR)
-        
-        # Draw corner of bin 
-        cv.rectangle(self.color_image, (X_CONNER[0], Y_CONNER[0]),
-                     (X_CONNER[3], Y_CONNER[3]), (0,255,0), 4)
-
+    
         # Record depth frame 
         self.depth_frame = rs.depth_frame(self.hole_filling_filter.process(self.depth_frame)) # apply hole filter     
         self.depth_image = np.asanyarray(self.depth_frame.get_data())
         self.depth_image_color = cv.applyColorMap(cv.convertScaleAbs(self.depth_image, alpha=0.2), cv.COLORMAP_JET) # convert to depth map
+        
+        # Draw corner of bin 
+        self.bin_color_image = self.color_image[Y_CONNER[0]:Y_CONNER[3], X_CONNER[0]:X_CONNER[3]]
+        self.bin_depth_image = self.depth_image[Y_CONNER[0]:Y_CONNER[3], X_CONNER[0]:X_CONNER[3]]
+        cv.rectangle(self.color_image, (X_CONNER[0], Y_CONNER[0]),
+                     (X_CONNER[3], Y_CONNER[3]), (0,255,0), 4)
         
         # Get the intrinsics of the color and depth cameras
         self.depth_intrinsics = self.depth_frame.profile.as_video_stream_profile().intrinsics    
