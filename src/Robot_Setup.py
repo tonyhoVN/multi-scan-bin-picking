@@ -35,14 +35,13 @@ HOME = [0.890407919883728,
         0.8971874713897705] # Joint Home
 
 # HOMEX = list(fkin(HOME,ref=DR_BASE)) # Cartesian Home
-HOMEX = [600.3831176757812, 70.744873046875, 630.87139892578125, 0.0, 180.0, 0.0]
+HOMEX = [600.3831176757812, 40.744873046875, 600.87139892578125, 0.0, 180.0, 0.0]
+# DEFAULT_SOL = 2 # solution space
 movel(HOMEX)
 
-# Target bin  
-TARGET_BIN = [281.0, 98.3, 406.0, 0.0, 180.0, 0.0]
-
 ## Transfromation matrix 
-Z_T_E = 170 #mm - distans from ee to tool
+Z_T_E = 80 #mm - distans from ee to tool
+Z_C_E = 40 #mm
 
 # H_T_C = np.array([[1, 0, 0, -35.2988],  #34.07
 #                   [0, 1, 0, -51.3072], #52.7
@@ -56,20 +55,12 @@ Z_T_E = 170 #mm - distans from ee to tool
 
 H_T_C = np.array([[1, 0, 0, -35.2988],  #34.07
                   [0, 1, 0, -60.3], #52.7
-<<<<<<< HEAD
                   [0, 0, 1, 90], #28
-=======
-                  [0, 0, 1, 95], #28
->>>>>>> origin/master
                   [0, 0, 0, 1]]) ## transformation matrix from tool to cam coordinate (mm)
 
 H_C_T = np.array([[1, 0, 0, 35.2988],
                   [0, 1, 0, 60.3],
-<<<<<<< HEAD
                   [0, 0, 1, -90],
-=======
-                  [0, 0, 1, -95],
->>>>>>> origin/master
                   [0, 0, 0, 1]]) ## transformation matrix from cam to tool coordinate (mm)
 
 
@@ -87,6 +78,17 @@ H_E_T = [[1, 0, 0, 0],
 H_B_R = np.eye(4) ## base-reference 
 H_B_O = np.eye(4) ## base-object
 
+## Principle point 
+H1 = np.eye(4)
+H2 = np.eye(4)
+H3 = np.eye(4)
+H2[:3,:3] = R.from_euler('y', 47.5307, degrees=True).as_matrix()
+H2[:3,3] = [-32.68, 0.0, 14.39]
+H3[:3,:3] = R.from_euler('y', -47.5307, degrees=True).as_matrix()
+H3[:3,3] = [32.68, 0.0, 14.39]
+H_PRINCIPAL = [H1,H2,H3]
+
+
 ## Transform frame 
 base_frame = "base_0"
 tool_frame = "link6"
@@ -94,6 +96,7 @@ camera_frame = "camera_color_optical_frame"
 end_tool_frame = "end_tool"
 target_object_frame = "object"
 scene_frame = "scene"
+reference_frame = "reference_object"
 
 broadcaster_static = tf2_ros.StaticTransformBroadcaster()
 broadcaster = tf2_ros.TransformBroadcaster()
