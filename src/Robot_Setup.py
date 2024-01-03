@@ -43,14 +43,24 @@ movel(HOMEX)
 Z_T_E = 80 #mm - distans from ee to tool
 Z_C_E = 40 #mm
 
+# H_T_C = np.array([[1, 0, 0, -35.2988],  #34.07
+#                   [0, 1, 0, -51.3072], #52.7
+#                   [0, 0, 1, 28], #28
+#                   [0, 0, 0, 1]]) ## transformation matrix from tool to cam coordinate (mm)
+
+# H_C_T = np.array([[1, 0, 0, 35.2988],
+#                   [0, 1, 0, 51.3072],
+#                   [0, 0, 1, -28],
+#                   [0, 0, 0, 1]]) ## transformation matrix from cam to tool coordinate (mm)
+
 H_T_C = np.array([[1, 0, 0, -35.2988],  #34.07
-                  [0, 1, 0, -51.3072], #52.7
-                  [0, 0, 1, 28], #28
+                  [0, 1, 0, -60.3], #52.7
+                  [0, 0, 1, 90], #28
                   [0, 0, 0, 1]]) ## transformation matrix from tool to cam coordinate (mm)
 
 H_C_T = np.array([[1, 0, 0, 35.2988],
-                  [0, 1, 0, 51.3072],
-                  [0, 0, 1, -28],
+                  [0, 1, 0, 60.3],
+                  [0, 0, 1, -90],
                   [0, 0, 0, 1]]) ## transformation matrix from cam to tool coordinate (mm)
 
 
